@@ -8,6 +8,8 @@ namespace Atmospherics.Voxel
         [Header("References")]
         public VoxelAtmosphericBridge bridge;
         public VoxelTerraformingIntegration terraforming;
+        public VoxelZoneDetector zoneDetector;
+        public VoxelVisualizer visualizer;
 
         [Header("Input Settings")]
         public KeyCode destroyKey = KeyCode.Mouse0;
@@ -42,11 +44,39 @@ namespace Atmospherics.Voxel
                 terraforming = GetComponent<VoxelTerraformingIntegration>();
             }
 
+            if (zoneDetector == null)
+            {
+                zoneDetector = GetComponent<VoxelZoneDetector>();
+            }
+
+            if (visualizer == null)
+            {
+                visualizer = GetComponent<VoxelVisualizer>();
+            }
+
+            if (zoneDetector != null)
+            {
+                zoneDetector.OnZonesChanged += OnZonesChangedHandler;
+            }
+
             if (bridge == null)
             {
                 Debug.LogWarning("VoxelRuntimeEditor: No VoxelAtmosphericBridge found!");
                 enabled = false;
             }
+        }
+
+        private void OnDestroy()
+        {
+            if (zoneDetector != null)
+            {
+                zoneDetector.OnZonesChanged -= OnZonesChangedHandler;
+            }
+        }
+
+        private void OnZonesChangedHandler()
+        {
+            RefreshVisualization();
         }
 
         private void Update()
@@ -227,13 +257,24 @@ namespace Atmospherics.Voxel
                         info += $"T: {node.Mixture.Temperature - 273.15f:F1}°C\n";
                     }
                 }
+
+                if (zoneDetector != null)
+                {
+                    var zone = zoneDetector.GetZoneAtVoxel(targetVoxel.Value);
+                    if (zone != null)
+                    {
+                        string zoneStatus = zone.isEnclosed ? "<color=green>SEALED</color>" : "<color=red>BREACHED</color>";
+                        info += $"\nZone {zone.zoneId}: {zoneStatus}\n";
+                        info += $"Voxels: {zone.voxels.Count}\n";
+                    }
+                }
             }
             else
             {
                 info += "No target voxel";
             }
 
-            GUI.Label(new Rect(10, 10, 300, 300), info, style);
+            GUI.Label(new Rect(10, 10, 300, 400), info, style);
         }
 
         private void OnDrawGizmos()

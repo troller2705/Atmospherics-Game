@@ -30,6 +30,8 @@ namespace Atmospherics.Voxel
         private Dictionary<int, ZoneInfo> detectedZones = new Dictionary<int, ZoneInfo>();
         private int nextZoneId = 0;
 
+        public System.Action OnZonesChanged;
+
         public class ZoneInfo
         {
             public int zoneId;
@@ -98,6 +100,8 @@ namespace Atmospherics.Voxel
                 int globalCount = detectedZones.Values.Count(z => !z.isEnclosed);
                 Debug.Log($"VoxelZoneDetector: Detected {detectedZones.Count} zones ({enclosedCount} enclosed, {globalCount} global)");
             }
+
+            OnZonesChanged?.Invoke();
         }
 
         private ZoneInfo FloodFillZone(Vector3Int startPos, HashSet<Vector3Int> globalVisited)
@@ -121,6 +125,10 @@ namespace Atmospherics.Voxel
                 if (IsAtGridEdge(current) && !gridEdgesAreSealed)
                 {
                     touchesEdge = true;
+                    if (logZoneDetection)
+                    {
+                        Debug.Log($"Zone touches edge at voxel {current}");
+                    }
                 }
 
                 foreach (Vector3Int neighbor in GetNeighbors(current))
@@ -130,7 +138,13 @@ namespace Atmospherics.Voxel
                     if (!bridge.IsValidPosition(neighbor))
                     {
                         if (!gridEdgesAreSealed)
+                        {
                             touchesEdge = true;
+                            if (logZoneDetection)
+                            {
+                                Debug.Log($"Zone reaches grid boundary from {current} trying to reach {neighbor}");
+                            }
+                        }
                         continue;
                     }
 
@@ -145,6 +159,12 @@ namespace Atmospherics.Voxel
 
             zone.isEnclosed = !touchesEdge;
             zone.centerPosition = CalculateZoneCenter(zone.voxels);
+
+            if (logZoneDetection)
+            {
+                string edgeStatus = touchesEdge ? "touches edge (GLOBAL)" : "enclosed (SEALED)";
+                Debug.Log($"FloodFill complete: {zone.voxels.Count} voxels, {edgeStatus}");
+            }
 
             return zone;
         }
@@ -241,11 +261,40 @@ namespace Atmospherics.Voxel
             if (zone.node != null)
             {
                 zone.node.NodeName = $"Global Zone {zone.zoneId} (BREACHED)";
+                zone.node.gameObject.name = $"Voxel Zone {zone.zoneId} [BREACHED - {zone.voxels.Count} voxels]";
             }
 
             if (logZoneDetection)
             {
                 Debug.Log($"Zone {zoneId} BREACHED! Converted to global atmosphere.");
+            }
+        }
+
+        public void ConvertZoneToEnclosed(int zoneId)
+        {
+            if (!detectedZones.ContainsKey(zoneId)) return;
+
+            ZoneInfo zone = detectedZones[zoneId];
+            if (zone.isEnclosed) return;
+
+            zone.isEnclosed = true;
+
+            if (zone.leakBehavior != null)
+            {
+                zone.leakBehavior.IsSealed = true;
+                zone.leakBehavior.LeakRateFractionPerSec = 0f;
+            }
+
+            if (zone.node != null)
+            {
+                zone.node.NodeName = $"Enclosed Zone {zone.zoneId} (RESEALED)";
+                zone.node.gameObject.name = $"Voxel Zone {zone.zoneId} [SEALED - {zone.voxels.Count} voxels]";
+                InitializeEnclosedAtmosphere(zone);
+            }
+
+            if (logZoneDetection)
+            {
+                Debug.Log($"Zone {zoneId} RESEALED! Converted to enclosed atmosphere.");
             }
         }
 
@@ -261,16 +310,262 @@ namespace Atmospherics.Voxel
 
         public void CheckForBreach(Vector3Int destroyedVoxelPos)
         {
-            foreach (var zone in detectedZones.Values.Where(z => z.isEnclosed).ToList())
+            if (logZoneDetection)
             {
-                if (IsVoxelAdjacentToZone(destroyedVoxelPos, zone))
+                Debug.Log($"CheckForBreach: Checking breach at {destroyedVoxelPos}, {detectedZones.Count} zones tracked");
+            }
+
+            foreach (var zone in detectedZones.Values.ToList())
+            {
+                if (zone.voxels.Contains(destroyedVoxelPos))
                 {
-                    if (!IsZoneStillEnclosed(zone))
+                    zone.voxels.Remove(destroyedVoxelPos);
+                    if (logZoneDetection)
                     {
-                        ConvertZoneToGlobal(zone.zoneId);
+                        Debug.Log($"CheckForBreach: Removed destroyed voxel from zone {zone.zoneId}");
                     }
                 }
             }
+
+            foreach (var zone in detectedZones.Values.Where(z => z.isEnclosed).ToList())
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForBreach: Checking zone {zone.zoneId} with {zone.voxels.Count} voxels");
+                }
+
+                if (IsVoxelAdjacentToZone(destroyedVoxelPos, zone))
+                {
+                    if (logZoneDetection)
+                    {
+                        Debug.Log($"CheckForBreach: Destroyed voxel {destroyedVoxelPos} is adjacent to zone {zone.zoneId}");
+                    }
+
+                    if (!IsZoneStillEnclosed(zone))
+                    {
+                        if (logZoneDetection)
+                        {
+                            Debug.Log($"CheckForBreach: Zone {zone.zoneId} is NO LONGER ENCLOSED - converting to global!");
+                        }
+                        ConvertZoneToGlobal(zone.zoneId);
+                    }
+                    else
+                    {
+                        if (logZoneDetection)
+                        {
+                            Debug.Log($"CheckForBreach: Zone {zone.zoneId} is still enclosed");
+                        }
+                    }
+                }
+                else
+                {
+                    if (logZoneDetection)
+                    {
+                        Debug.Log($"CheckForBreach: Destroyed voxel {destroyedVoxelPos} is NOT adjacent to zone {zone.zoneId}");
+                    }
+                }
+            }
+
+            CheckForZoneMerge(destroyedVoxelPos);
+        }
+
+        public void CheckForZoneMerge(Vector3Int destroyedVoxelPos)
+        {
+            if (logZoneDetection)
+            {
+                Debug.Log($"CheckForZoneMerge: Checking if voxel {destroyedVoxelPos} merges zones");
+            }
+
+            List<ZoneInfo> adjacentZones = new List<ZoneInfo>();
+            foreach (var neighbor in GetNeighbors(destroyedVoxelPos))
+            {
+                if (!bridge.IsValidPosition(neighbor)) continue;
+                var neighborData = bridge.GetVoxel(neighbor);
+                if (!neighborData.IsPassable()) continue;
+
+                foreach (var zone in detectedZones.Values)
+                {
+                    if (zone.voxels.Contains(neighbor) && !adjacentZones.Contains(zone))
+                    {
+                        adjacentZones.Add(zone);
+                        break;
+                    }
+                }
+            }
+
+            if (adjacentZones.Count >= 2)
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForZoneMerge: Found {adjacentZones.Count} adjacent zones - they will MERGE! Re-detecting zones...");
+                }
+                DetectAndCreateZones();
+            }
+            else
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForZoneMerge: Only {adjacentZones.Count} adjacent zones, no merge");
+                }
+            }
+        }
+
+        public void CheckForSealing(Vector3Int createdVoxelPos)
+        {
+            if (logZoneDetection)
+            {
+                Debug.Log($"CheckForSealing: Checking seal at {createdVoxelPos}, {detectedZones.Count} zones tracked");
+            }
+
+            foreach (var zone in detectedZones.Values.Where(z => !z.isEnclosed).ToList())
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForSealing: Checking global zone {zone.zoneId} with {zone.voxels.Count} voxels");
+                }
+
+                if (IsVoxelAdjacentToZone(createdVoxelPos, zone))
+                {
+                    if (logZoneDetection)
+                    {
+                        Debug.Log($"CheckForSealing: Created voxel {createdVoxelPos} is adjacent to zone {zone.zoneId}");
+                    }
+
+                    if (IsZoneStillEnclosed(zone))
+                    {
+                        if (logZoneDetection)
+                        {
+                            Debug.Log($"CheckForSealing: Zone {zone.zoneId} is NOW ENCLOSED - converting to sealed!");
+                        }
+                        ConvertZoneToEnclosed(zone.zoneId);
+                    }
+                    else
+                    {
+                        if (logZoneDetection)
+                        {
+                            Debug.Log($"CheckForSealing: Zone {zone.zoneId} is still breached");
+                        }
+                    }
+                }
+                else
+                {
+                    if (logZoneDetection)
+                    {
+                        Debug.Log($"CheckForSealing: Created voxel {createdVoxelPos} is NOT adjacent to zone {zone.zoneId}");
+                    }
+                }
+            }
+
+            CheckForZoneSplit(createdVoxelPos);
+        }
+
+        public void CheckForZoneSplit(Vector3Int createdVoxelPos)
+        {
+            if (logZoneDetection)
+            {
+                Debug.Log($"CheckForZoneSplit: Checking if voxel {createdVoxelPos} splits any zones");
+            }
+
+            List<Vector3Int> adjacentPassableVoxels = new List<Vector3Int>();
+            foreach (var neighbor in GetNeighbors(createdVoxelPos))
+            {
+                if (!bridge.IsValidPosition(neighbor)) continue;
+                var neighborData = bridge.GetVoxel(neighbor);
+                if (neighborData.IsPassable())
+                {
+                    adjacentPassableVoxels.Add(neighbor);
+                }
+            }
+
+            if (adjacentPassableVoxels.Count < 2)
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForZoneSplit: Only {adjacentPassableVoxels.Count} passable neighbors, cannot split");
+                }
+                return;
+            }
+
+            ZoneInfo affectedZone = null;
+            foreach (var zone in detectedZones.Values)
+            {
+                if (zone.voxels.Contains(adjacentPassableVoxels[0]))
+                {
+                    affectedZone = zone;
+                    break;
+                }
+            }
+
+            if (affectedZone == null)
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForZoneSplit: No zone found containing adjacent voxels");
+                }
+                return;
+            }
+
+            if (!AreVoxelsStillConnected(adjacentPassableVoxels[0], adjacentPassableVoxels, affectedZone))
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForZoneSplit: Zone {affectedZone.zoneId} has been SPLIT! Re-detecting zones...");
+                }
+                DetectAndCreateZones();
+            }
+            else
+            {
+                if (logZoneDetection)
+                {
+                    Debug.Log($"CheckForZoneSplit: Zone {affectedZone.zoneId} is still connected");
+                }
+            }
+        }
+
+        private bool AreVoxelsStillConnected(Vector3Int start, List<Vector3Int> targets, ZoneInfo zone)
+        {
+            HashSet<Vector3Int> visited = new HashSet<Vector3Int>();
+            Queue<Vector3Int> queue = new Queue<Vector3Int>();
+            queue.Enqueue(start);
+            visited.Add(start);
+
+            HashSet<Vector3Int> foundTargets = new HashSet<Vector3Int>();
+            int iterations = 0;
+
+            while (queue.Count > 0 && iterations < maxFloodFillDepth)
+            {
+                iterations++;
+                Vector3Int current = queue.Dequeue();
+
+                foreach (var target in targets)
+                {
+                    if (current == target)
+                    {
+                        foundTargets.Add(target);
+                    }
+                }
+
+                if (foundTargets.Count == targets.Count)
+                {
+                    return true;
+                }
+
+                foreach (var neighbor in GetNeighbors(current))
+                {
+                    if (visited.Contains(neighbor)) continue;
+                    if (!bridge.IsValidPosition(neighbor)) continue;
+
+                    var neighborData = bridge.GetVoxel(neighbor);
+                    if (!neighborData.IsPassable()) continue;
+
+                    if (!zone.voxels.Contains(neighbor)) continue;
+
+                    queue.Enqueue(neighbor);
+                    visited.Add(neighbor);
+                }
+            }
+
+            return foundTargets.Count == targets.Count;
         }
 
         private bool IsVoxelAdjacentToZone(Vector3Int voxel, ZoneInfo zone)

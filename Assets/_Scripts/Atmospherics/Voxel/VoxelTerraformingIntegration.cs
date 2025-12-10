@@ -66,6 +66,11 @@ namespace Atmospherics.Voxel
             if (atmosphericBridge == null) return;
 
             atmosphericBridge.SetVoxel(voxelPosition, type, 1f, true);
+
+            if (zoneDetector != null && type == VoxelAtmosphericBridge.VoxelType.Solid)
+            {
+                zoneDetector.CheckForSealing(voxelPosition);
+            }
         }
 
         public void OnVoxelDamaged(Vector3Int voxelPosition, float damageAmount)

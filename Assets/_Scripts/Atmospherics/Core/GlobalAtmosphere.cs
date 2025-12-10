@@ -16,6 +16,8 @@ namespace Atmospherics.Core
         public float oxygen = 0f;
         public float carbonDioxide = 0f;
 
+        public GasMixture mixture;
+
         [Header("Presets")]
         public AtmospherePreset preset = AtmospherePreset.Vacuum;
 
@@ -77,6 +79,11 @@ namespace Atmospherics.Core
                 case AtmospherePreset.Custom:
                     break;
             }
+
+            mixture = new GasMixture(globalPressure, globalTemperature);
+            mixture.AddGas("O2", oxygen);
+            mixture.AddGas("N2", nitrogen);
+            mixture.AddGas("CO2", carbonDioxide);
         }
 
         public void ApplyToNode(AtmosphericNode node, float volume)

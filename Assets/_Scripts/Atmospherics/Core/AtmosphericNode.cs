@@ -25,8 +25,11 @@ namespace Atmospherics.Core
 
         public float Temperature => Mixture?.Temperature ?? 0f;
 
+        private GlobalAtmosphere global;
+
         private void Awake()
         {
+            
             if (Mixture == null)
             {
                 Initialize(
@@ -43,6 +46,10 @@ namespace Atmospherics.Core
                     RecalculateInternalEnergy();
                 }
             }
+            if (global = GetComponent<GlobalAtmosphere>())
+            {
+                Mixture = global.mixture;
+            }
         }
 
         public void Initialize(string name, float pressure = 101.3f, float temperature = 293f, float volume = 1f)
@@ -51,6 +58,7 @@ namespace Atmospherics.Core
             Mixture = new GasMixture(pressure, temperature, volume);
             Thermal = ThermalProperties.Default();
             RecalculateInternalEnergy();
+            
         }
 
         public void RecalculateInternalEnergy()

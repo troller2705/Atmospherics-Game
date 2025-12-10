@@ -2230,21 +2230,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 579349909}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5b60bbb2c364c408a31d97d476a7ec, type: 3}
+  m_Script: {fileID: 11500000, guid: da2c57159aaf34c43b9fc05c7666159e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.VolumeNode
-  NodeName: Node EXT
+  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.AtmosphericNode
+  NodeName: EXT
   Mixture:
     Temperature: 2.7
-    Volume: 500
+    Volume: 25
     gasKeys:
     - O2
     gasValues:
     - 0.001
-  ThermalCapacityJPerK: 1000
-  InternalEnergyJ: 0.07830001
-  ExternalTempK: 220
-  HeatLossCoefficient: 1
+  Thermal:
+    InternalEnergyJ: 0.07830001
+    ExternalTempK: 0
+    HeatLossCoefficient: 0
+    ThermalCapacityJPerK: 0
 --- !u!4 &579349911
 Transform:
   m_ObjectHideFlags: 0
@@ -3090,29 +3091,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 888666991}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eee8e4e0bf8203f4a89b33271b3f023f, type: 3}
+  m_Script: {fileID: 11500000, guid: 0f77208b3b864384b8c820a583924fb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.AtmosphericsManager
-  ht: {fileID: 888666994}
   SimulationTick: 0.1
-  defaultPressure: 1
-  defaultTemperature: 20
-  defaultVolume: 5
-  defaultConductance: 0.1
-  defaultPumpFlow: 1
-  Zones:
-  - {fileID: 1750277139}
-  Pipes: []
-  Pumps: []
-  Scrubbers:
-  - {fileID: 23686845}
-  Canisters:
-  - {fileID: 964179806}
-  HazardMonitors:
-  - {fileID: 1310894288}
-  selectedNodeA: {fileID: 0}
-  selectedNodeB: {fileID: 0}
-  flowAnimation: 530.9636
+  AutoDiscovery: 1
+  DiscoveryInterval: 1
+  ShowDebugInfo: 0
+  ActiveConnections: 0
+  ActiveLeaks: 0
+  TotalNodes: 0
 --- !u!4 &888666993
 Transform:
   m_ObjectHideFlags: 0
@@ -3126,7 +3114,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1750277140}
+  - {fileID: 1138960301}
   - {fileID: 1466701470}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3142,8 +3130,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1e31fa73ff3dee468ba5643111ec46f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HeatTransfer
-  manager: {fileID: 888666992}
   pipeThermalConductance: 10
+  autoDiscovery: 1
 --- !u!114 &888666995
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3604,13 +3592,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1138960299}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5b60bbb2c364c408a31d97d476a7ec, type: 3}
+  m_Script: {fileID: 11500000, guid: da2c57159aaf34c43b9fc05c7666159e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.VolumeNode
-  NodeName: Test
+  NodeName: Node A
   Mixture:
     Temperature: 293
-    Volume: 50
+    Volume: 5
     gasKeys:
     - O2
     - N2
@@ -3619,10 +3607,11 @@ MonoBehaviour:
     - 100
     - 380
     - 0.2
-  ThermalCapacityJPerK: 1000
-  InternalEnergyJ: 4080259.5
-  ExternalTempK: 220
-  HeatLossCoefficient: 1
+  Thermal:
+    InternalEnergyJ: 4080259.5
+    ExternalTempK: 0
+    HeatLossCoefficient: 0
+    ThermalCapacityJPerK: 0
 --- !u!4 &1138960301
 Transform:
   m_ObjectHideFlags: 0
@@ -3636,7 +3625,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1750277140}
+  m_Father: {fileID: 888666993}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1151132832
 GameObject:
@@ -6015,56 +6004,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &1750277138
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1750277140}
-  - component: {fileID: 1750277139}
-  m_Layer: 0
-  m_Name: Zone
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1750277139
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1750277138}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ced4d244accde14d9e44bdd054f1e53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.AtmosphericZone
-  Nodes:
-  - {fileID: 1138960300}
-  Sealed: 1
-  exteriorNode: {fileID: 579349910}
-  LeakRateFractionPerSec: 0.01
---- !u!4 &1750277140
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1750277138}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1138960301}
-  m_Father: {fileID: 888666993}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1752670894
 GameObject:
   m_ObjectHideFlags: 0

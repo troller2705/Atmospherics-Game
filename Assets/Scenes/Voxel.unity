@@ -1444,6 +1444,10 @@ GameObject:
   - component: {fileID: 439947252}
   - component: {fileID: 439947251}
   - component: {fileID: 439947256}
+  - component: {fileID: 439947257}
+  - component: {fileID: 439947260}
+  - component: {fileID: 439947259}
+  - component: {fileID: 439947258}
   m_Layer: 0
   m_Name: Voxel Test Scene
   m_TagString: Untagged
@@ -1464,6 +1468,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Voxel.VoxelTerraformingIntegration
   atmosphericBridge: {fileID: 439947254}
+  zoneDetector: {fileID: 0}
   enableAtmosphericLeaks: 1
   leakRatePerVoxel: 0.01
   enablePressureBasedBreaking: 1
@@ -1487,6 +1492,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Voxel.VoxelRuntimeEditor
   bridge: {fileID: 439947254}
   terraforming: {fileID: 439947251}
+  zoneDetector: {fileID: 0}
+  visualizer: {fileID: 0}
   destroyKey: 323
   createKey: 324
   raycastDistance: 100
@@ -1529,7 +1536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eff7905e9b930004c997d296b4169047, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Voxel.VoxelAtmosphericBridge
-  gridSize: {x: 10, y: 5, z: 10}
+  gridSize: {x: 10, y: 8, z: 10}
   voxelSize: 2
   gridOrigin: {x: 0, y: 0, z: 0}
   volumePerVoxel: 8
@@ -1552,8 +1559,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1965573340}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &439947256
@@ -1572,7 +1578,193 @@ MonoBehaviour:
   terrainType: 1
   floorHeight: 1
   createWalls: 1
+  createCeiling: 1
   wallHeight: 5
+--- !u!114 &439947257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439947250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6852212e9ed304f9b3af87e1db19aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Voxel.VoxelZoneDetector
+  maxFloodFillDepth: 10000
+  gridEdgesAreSealed: 0
+  globalAtmosphere: {fileID: 647685839}
+  showZoneGizmos: 1
+  enclosedZoneColor: {r: 0, g: 1, b: 0, a: 1}
+  globalZoneColor: {r: 1, g: 0, b: 0, a: 1}
+  logZoneDetection: 1
+--- !u!114 &439947258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439947250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd1141b28e3142941bf5c102d2004954, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Voxel.VoxelGasFlowEffects
+  gasFlowParticlePrefab: {fileID: 0}
+  maxActiveEmitters: 20
+  emitterLifetime: 2
+  minimumPressureDifference: 20
+  autoDetectFlow: 1
+  flowCheckInterval: 0.5
+  highPressureColor: {r: 1, g: 0.3, b: 0.3, a: 0.5}
+  lowPressureColor: {r: 0.3, g: 0.3, b: 1, a: 0.5}
+  particleSize: 0.1
+  particleSpeed: 2
+--- !u!114 &439947259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439947250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11149259e62c1074dbdc96201b7efee0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Voxel.VoxelVisualizationUI
+  visualizer: {fileID: 0}
+  flowEffects: {fileID: 0}
+  toggleUIKey: 9
+  cycleModeKey: 118
+  toggleFlowEffectsKey: 102
+  showUI: 0
+  fontSize: 16
+  uiPosition:
+    serializedVersion: 2
+    x: 10
+    y: 100
+    width: 300
+    height: 400
+--- !u!114 &439947260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439947250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a286c160b6bc8b041a64718fe317f20b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Voxel.VoxelAtmosphericVisualizer
+  currentMode: 0
+  showOnlyPassableVoxels: 1
+  updateInterval: 0.1
+  minPressure: 0
+  maxPressure: 200
+  pressureGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  minOxygenPercent: 0
+  maxOxygenPercent: 30
+  oxygenGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  minTemperature: 200
+  maxTemperature: 350
+  temperatureGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  breathableColor: {r: 0, g: 1, b: 0, a: 0.3}
+  lowOxygenColor: {r: 1, g: 1, b: 0, a: 0.3}
+  noOxygenColor: {r: 1, g: 0, b: 0, a: 0.3}
+  breathableOxygenMin: 19
+  breathableOxygenMax: 23
+  overlayMaterial: {fileID: 0}
+  useTransparency: 1
+  overlayAlpha: 0.5
 --- !u!1 &442322055
 GameObject:
   m_ObjectHideFlags: 0
@@ -2464,6 +2656,91 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 87.5, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &647685838
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 647685840}
+  - component: {fileID: 647685839}
+  - component: {fileID: 647685841}
+  m_Layer: 0
+  m_Name: GlobalAtmosphere
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &647685839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 647685838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1942164f2aae8fe4eb9d62a2e517d035, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.GlobalAtmosphere
+  globalPressure: 0
+  globalTemperature: 2.7
+  nitrogen: 0
+  oxygen: 0
+  carbonDioxide: 0
+  mixture:
+    Temperature: 2.7
+    Volume: 1
+    gasKeys:
+    - O2
+    - N2
+    - CO2
+    gasValues:
+    - 0
+    - 0
+    - 0
+  preset: 0
+--- !u!4 &647685840
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 647685838}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.35288, y: 8.39372, z: 1.62449}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &647685841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 647685838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da2c57159aaf34c43b9fc05c7666159e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.AtmosphericNode
+  NodeName: Global
+  Mixture:
+    Temperature: 0
+    Volume: 0
+    gasKeys: []
+    gasValues: []
+  Thermal:
+    InternalEnergyJ: 0
+    ExternalTempK: 0
+    HeatLossCoefficient: 0
+    ThermalCapacityJPerK: 0
 --- !u!1 &669652836
 GameObject:
   m_ObjectHideFlags: 0
@@ -3205,7 +3482,7 @@ MonoBehaviour:
   SimulationTick: 0.1
   AutoDiscovery: 1
   DiscoveryInterval: 1
-  ShowDebugInfo: 0
+  ShowDebugInfo: 1
   ActiveConnections: 0
   ActiveLeaks: 0
   TotalNodes: 0
@@ -6695,148 +6972,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1928305295}
   m_CullTransparentMesh: 1
---- !u!1 &1965573339
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1965573340}
-  - component: {fileID: 1965573342}
-  - component: {fileID: 1965573341}
-  m_Layer: 0
-  m_Name: 'Voxel Zone [192 voxels]'
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1965573340
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1965573339}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10, y: 5, z: 10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 439947255}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1965573341
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1965573339}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ea4fda8023d10445b9b363cbaf4d87b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Visualization.AtmosphericZoneVisualizer
-  showZoneBoundary: 1
-  showPressureColor: 0
-  showTemperatureColor: 1
-  meshType: 2
-  sphereRadius: 5.629621
-  wireframeThickness: 0.05
-  pressureGradient:
-    serializedVersion: 2
-    key0: {r: 0, g: 1, b: 0.24671865, a: 1}
-    key1: {r: 1, g: 0, b: 0, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: 0
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  temperatureGradient:
-    serializedVersion: 2
-    key0: {r: 0, g: 0.29543877, b: 1, a: 1}
-    key1: {r: 1, g: 0, b: 0, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: 0
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  defaultColor: {r: 0, g: 1, b: 1, a: 0.3}
-  updateInterval: 0.5
---- !u!114 &1965573342
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1965573339}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da2c57159aaf34c43b9fc05c7666159e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Atmospherics.Core.AtmosphericNode
-  NodeName: VoxelNode
-  Mixture:
-    Temperature: 293
-    Volume: 5
-    gasKeys:
-    - O2
-    - N2
-    - CO2
-    gasValues:
-    - 100
-    - 380
-    - 0.2
-  Thermal:
-    InternalEnergyJ: 4080259.5
-    ExternalTempK: 0
-    HeatLossCoefficient: 0
-    ThermalCapacityJPerK: 0
 --- !u!1 &2029766484
 GameObject:
   m_ObjectHideFlags: 0
@@ -7219,3 +7354,4 @@ SceneRoots:
   - {fileID: 2031565201}
   - {fileID: 1728398992}
   - {fileID: 439947255}
+  - {fileID: 647685840}

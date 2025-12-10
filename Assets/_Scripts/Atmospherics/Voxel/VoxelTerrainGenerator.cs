@@ -21,6 +21,9 @@ namespace Atmospherics.Voxel
         [Tooltip("Create enclosed room")]
         public bool createWalls = true;
 
+        [Tooltip("Create ceiling for the room")]
+        public bool createCeiling = true;
+
         [Range(3, 20)]
         [Tooltip("Height of room walls")]
         public int wallHeight = 5;
@@ -56,7 +59,7 @@ namespace Atmospherics.Voxel
             switch (terrainType)
             {
                 case TerrainType.FlatFloor:
-                    GenerateFlatFloor();
+                    GenerateFlatFloorTerrain();
                     break;
                 case TerrainType.Room:
                     GenerateRoom();
@@ -99,12 +102,26 @@ namespace Atmospherics.Voxel
             }
         }
 
+        private void GenerateFlatFloorTerrain()
+        {
+            InitializeEmptyGrid();
+            GenerateFlatFloor();
+        }
+
         private void GenerateRoom()
         {
+            InitializeEmptyGrid();
+            
             GenerateFlatFloor();
 
-            if (!createWalls) return;
+            if (!createWalls)
+            {
+                Debug.Log("GenerateRoom: Walls disabled");
+                return;
+            }
 
+            Debug.Log($"GenerateRoom: Creating walls from height {floorHeight} to {wallHeight}");
+            
             for (int x = 0; x < bridge.gridSize.x; x++)
             {
                 for (int z = 0; z < bridge.gridSize.z; z++)
@@ -121,10 +138,48 @@ namespace Atmospherics.Voxel
                     }
                 }
             }
+
+            Debug.Log($"GenerateRoom: createCeiling={createCeiling}, wallHeight={wallHeight}, gridSize.y={bridge.gridSize.y}");
+            
+            if (createCeiling)
+            {
+                int ceilingY = Mathf.Min(wallHeight, bridge.gridSize.y - 1);
+                Debug.Log($"GenerateRoom: Creating ceiling at height {ceilingY}");
+                int ceilingVoxels = 0;
+                for (int x = 0; x < bridge.gridSize.x; x++)
+                {
+                    for (int z = 0; z < bridge.gridSize.z; z++)
+                    {
+                        bridge.SetVoxel(x, ceilingY, z, VoxelAtmosphericBridge.VoxelType.Solid, 1f, true);
+                        ceilingVoxels++;
+                    }
+                }
+                Debug.Log($"GenerateRoom: Created {ceilingVoxels} ceiling voxels at y={ceilingY}");
+            }
+            else
+            {
+                Debug.Log($"GenerateRoom: Ceiling NOT created - createCeiling={createCeiling}");
+            }
+        }
+
+        private void InitializeEmptyGrid()
+        {
+            for (int x = 0; x < bridge.gridSize.x; x++)
+            {
+                for (int y = 0; y < bridge.gridSize.y; y++)
+                {
+                    for (int z = 0; z < bridge.gridSize.z; z++)
+                    {
+                        bridge.SetVoxel(x, y, z, VoxelAtmosphericBridge.VoxelType.Empty, 0f, false);
+                    }
+                }
+            }
         }
 
         private void GeneratePerlinTerrain()
         {
+            InitializeEmptyGrid();
+            
             float scale = 0.15f;
             float heightMultiplier = 3f;
 
